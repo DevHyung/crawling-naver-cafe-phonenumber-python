@@ -9,8 +9,7 @@ python_version  :3.6
 required module :selenium+chromewebdriver
 """
 from selenium import webdriver
-NAVER_ID = "PUT_YOUR_NAVER_ID"
-NAVER_PW = "PUT_YOUR_NAVER_PW"
+from HEADER import *
 if __name__=="__main__":
     dir = './chromedriver'  # Driver Path
     driver = webdriver.Chrome(dir)
