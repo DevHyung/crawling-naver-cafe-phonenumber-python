@@ -12,6 +12,8 @@ from selenium import webdriver
 from HEADER import *
 import time
 from bs4 import BeautifulSoup
+import re
+reg = re.compile('\d{3}[-\.\s]??\d{4}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{4}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}')
 if __name__=="__main__":
     # Setting variable
     dir = './chromedriver'  # Driver Path
@@ -33,8 +35,11 @@ if __name__=="__main__":
     driver.find_elements_by_xpath('//*[@id="main-area"]/div[9]/form/a/img')[0].click()
     # Search end
     # Parsing start
-    time.sleep(0.5)
+    time.sleep(1)
     driver.find_elements_by_xpath('//*[@id="main-area"]/div[7]/form/table/tbody/tr[1]/td[2]/span/span/a')[0].click()
-    time.sleep(0.5)
+    time.sleep(1)
     bs4 = BeautifulSoup(driver.page_source,"lxml")
-    print(bs4.prettify())
+    div = bs4.find('div',class_="tbody m-tcol-c")
+    results = reg.findall(div.get_text())
+    print(div.get_text())
+    print(results)
