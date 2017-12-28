@@ -12,8 +12,14 @@ from selenium import webdriver
 from HEADER import *
 import time
 from bs4 import BeautifulSoup
+import pymysql
 import re
 reg = re.compile('\d{3}[-\.\s]??\d{4}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{4}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4}')
+#---DB연결
+conn = pymysql.connect(ip,id,pw,name,charset="utf8")
+curs = conn.cursor()
+sql_jangpan = """insert into jangpan(content,url,tel)
+                   values (%s, %s, %s)"""
 if __name__=="__main__":
     # Setting variable
     dir = './chromedriver'  # Driver Path
@@ -35,11 +41,26 @@ if __name__=="__main__":
     driver.find_elements_by_xpath('//*[@id="main-area"]/div[9]/form/a/img')[0].click()
     # Search end
     # Parsing start
-    time.sleep(1)
-    driver.find_elements_by_xpath('//*[@id="main-area"]/div[7]/form/table/tbody/tr[1]/td[2]/span/span/a')[0].click()
-    time.sleep(1)
-    bs4 = BeautifulSoup(driver.page_source,"lxml")
-    div = bs4.find('div',class_="tbody m-tcol-c")
-    results = reg.findall(div.get_text())
-    print(div.get_text())
-    print(results)
+    for pageidx in range(1,100):
+        time.sleep(1)
+        bs4 = BeautifulSoup(driver.page_source, "lxml")
+        div = bs4.find('div', class_="article-board m-tcol-c")
+        a = div.find_all('a', class_="m-tcol-c")
+        for idx  in range (0,15):
+            driver.get("http://cafe.naver.com/"+a[0+3*idx]['href'])
+            driver.switch_to.frame(driver.find_element_by_xpath('//*[@id="cafe_main"]'))
+            time.sleep(1)
+            bs4 = BeautifulSoup(driver.page_source,"lxml")
+            div = bs4.find('div',class_="tbody m-tcol-c")
+            try:
+                results = reg.search(div.get_text()).group()
+                curs.execute(sql_jangpan, ("http://cafe.naver.com/"+a[0+3*idx]['href'],div.get_text(), results))
+                conn.commit()
+            except:
+                print("추출실패 : ","http://cafe.naver.com/"+a[0+3*idx]['href'])
+                curs.execute(sql_jangpan, ("http://cafe.naver.com/" + a[0 + 3 * idx]['href'], div.get_text(), ''))
+                conn.commit()
+            driver.execute_script("window.history.go(-1)")
+        driver.get('http://cafe.naver.com/0404ab?iframe_url=/ArticleSearchList.nhn%3Fsearch.clubid=18600855%26search.media=0%26search.searchdate=all%26search.defaultValue=1%26userDisplay=15%26search.option=0%26search.sortBy=date%26search.searchBy=0%26search.query=%B5%A5%C4%DA%C5%B8%C0%CF+%BD%C3%B0%F8+010%26search.viewtype=title%26search.page='+str(1+pageidx))
+        driver.switch_to.frame(driver.find_element_by_xpath('//*[@id="cafe_main"]'))
+        time.sleep(1)
