@@ -41,7 +41,9 @@ if __name__=="__main__":
     driver.find_elements_by_xpath('//*[@id="main-area"]/div[9]/form/a/img')[0].click()
     # Search end
     # Parsing start
-    for pageidx in range(1,100):
+    for pageidx in range(62,100):
+        driver.get('http://cafe.naver.com/0404ab?iframe_url=/ArticleSearchList.nhn%3Fsearch.clubid=18600855%26search.media=0%26search.searchdate=all%26search.defaultValue=1%26userDisplay=15%26search.option=0%26search.sortBy=date%26search.searchBy=0%26search.query=%B5%A5%C4%DA%C5%B8%C0%CF+%BD%C3%B0%F8+010%26search.viewtype=title%26search.page=' + str(1+pageidx))
+        driver.switch_to.frame(driver.find_element_by_xpath('//*[@id="cafe_main"]'))
         time.sleep(1)
         bs4 = BeautifulSoup(driver.page_source, "lxml")
         div = bs4.find('div', class_="article-board m-tcol-c")
@@ -54,13 +56,15 @@ if __name__=="__main__":
             div = bs4.find('div',class_="tbody m-tcol-c")
             try:
                 results = reg.search(div.get_text()).group()
-                curs.execute(sql_jangpan, ("http://cafe.naver.com/"+a[0+3*idx]['href'],div.get_text(), results))
+                curs.execute(sql_jangpan, (div.get_text(),"http://cafe.naver.com/"+a[0+3*idx]['href'], results))
                 conn.commit()
             except:
                 print("추출실패 : ","http://cafe.naver.com/"+a[0+3*idx]['href'])
-                curs.execute(sql_jangpan, ("http://cafe.naver.com/" + a[0 + 3 * idx]['href'], div.get_text(), ''))
-                conn.commit()
+                try:
+                    curs.execute(sql_jangpan, (div.get_text(),"http://cafe.naver.com/" + a[0 + 3 * idx]['href'], ''))
+                    conn.commit()
+                except:
+                    pass
             driver.execute_script("window.history.go(-1)")
-        driver.get('http://cafe.naver.com/0404ab?iframe_url=/ArticleSearchList.nhn%3Fsearch.clubid=18600855%26search.media=0%26search.searchdate=all%26search.defaultValue=1%26userDisplay=15%26search.option=0%26search.sortBy=date%26search.searchBy=0%26search.query=%B5%A5%C4%DA%C5%B8%C0%CF+%BD%C3%B0%F8+010%26search.viewtype=title%26search.page='+str(1+pageidx))
-        driver.switch_to.frame(driver.find_element_by_xpath('//*[@id="cafe_main"]'))
-        time.sleep(1)
+
+    conn.close()
