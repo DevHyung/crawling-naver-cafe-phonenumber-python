@@ -1,6 +1,7 @@
-NAVER_ID = "INPUT_YOUR_NAVER_ID"
-NAVER_PW = "INPUT_YOUR_NAVER_PW"
-KEYWORD = "데코타일 시공 010"
+NAVER_ID = "INPUTID"
+NAVER_PW = "INPUTPW"
+KEYWORD = "장판 시공 010"
+TARGET_SITE = "http://cafe.naver.com/joonggonara"
 #___DB부분 변수
 ip = 'localhost'
 id = 'root'

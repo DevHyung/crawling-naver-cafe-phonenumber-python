@@ -20,12 +20,18 @@ conn = pymysql.connect(ip,id,pw,name,charset="utf8")
 curs = conn.cursor()
 sql_jangpan = """insert into jangpan(content,url,tel)
                    values (%s, %s, %s)"""
+sql_jangpan2 = """insert into jangpan2(keyword,content,url,tel)
+                   values (%s,%s, %s, %s)"""
+sql_jangpan3 = """insert into jangpan3(keyword,content,url,tel)
+                   values (%s,%s, %s, %s)"""
+sql_jangpan4 = """insert into jangpan4(keyword,content,url,tel)
+                   values (%s,%s, %s, %s)"""
 if __name__=="__main__":
     # Setting variable
     dir = './chromedriver'  # Driver Path
     driver = webdriver.Chrome(dir)
     # Login start
-    driver.get("http://cafe.naver.com/0404ab") # target page
+    driver.get(TARGET_SITE) # target page
     driver.find_elements_by_xpath('//*[@id="gnb_login_button"]/span[3]')[0].click()
     driver.find_elements_by_xpath('//*[@id="id"]')[0].send_keys(NAVER_ID)
     driver.find_elements_by_xpath('//*[@id="pw"]')[0].send_keys(NAVER_PW)
@@ -41,8 +47,8 @@ if __name__=="__main__":
     driver.find_elements_by_xpath('//*[@id="main-area"]/div[9]/form/a/img')[0].click()
     # Search end
     # Parsing start
-    for pageidx in range(62,100):
-        driver.get('http://cafe.naver.com/0404ab?iframe_url=/ArticleSearchList.nhn%3Fsearch.clubid=18600855%26search.media=0%26search.searchdate=all%26search.defaultValue=1%26userDisplay=15%26search.option=0%26search.sortBy=date%26search.searchBy=0%26search.query=%B5%A5%C4%DA%C5%B8%C0%CF+%BD%C3%B0%F8+010%26search.viewtype=title%26search.page=' + str(1+pageidx))
+    for pageidx in range(0,100):
+        driver.get(TARGET_SITE+'?iframe_url=/ArticleSearchList.nhn%3Fsearch.clubid=18600855%26search.media=0%26search.searchdate=all%26search.defaultValue=1%26userDisplay=15%26search.option=0%26search.sortBy=date%26search.searchBy=0%26search.query=%B5%A5%C4%DA%C5%B8%C0%CF+%BD%C3%B0%F8+010%26search.viewtype=title%26search.page=' + str(1+pageidx))
         driver.switch_to.frame(driver.find_element_by_xpath('//*[@id="cafe_main"]'))
         time.sleep(1)
         bs4 = BeautifulSoup(driver.page_source, "lxml")
@@ -56,12 +62,12 @@ if __name__=="__main__":
             div = bs4.find('div',class_="tbody m-tcol-c")
             try:
                 results = reg.search(div.get_text()).group()
-                curs.execute(sql_jangpan, (div.get_text(),"http://cafe.naver.com/"+a[0+3*idx]['href'], results))
+                curs.execute(sql_jangpan4, (KEYWORD,div.get_text(),"http://cafe.naver.com/"+a[0+3*idx]['href'], results))
                 conn.commit()
             except:
                 print("추출실패 : ","http://cafe.naver.com/"+a[0+3*idx]['href'])
                 try:
-                    curs.execute(sql_jangpan, (div.get_text(),"http://cafe.naver.com/" + a[0 + 3 * idx]['href'], ''))
+                    curs.execute(sql_jangpan4, (KEYWORD,div.get_text(),"http://cafe.naver.com/" + a[0 + 3 * idx]['href'], ''))
                     conn.commit()
                 except:
                     pass
